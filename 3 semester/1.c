@@ -1,29 +1,32 @@
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
 #include <stdlib.h>
-#include <math.h>
-#include <limits.h>
+#include <fcntl.h>
 
-int
-main(void)
-{
-    long long a, b;
-    scanf("%lld%lld", &a, &b);
-    long long c = b * (a / b);
-    if (a > 0) {
-        if (a - c >= c + b - a) {
-            c += b;
-        }
-        if (c > INT_MAX) {
-            c -= b;
-        }
-    } else {
-        if (c - a > a + b - c) {
-            c -= b;
-        }
-        if (c < INT_MIN) {
-            c += b;
-        }
+void dfs(int n, int deep, int max_deep){
+    if(deep > max_deep){
+        return;
     }
-    printf("%lld\n", c);
+    if(fork() == 0){
+        dfs(2 * n + 1, deep + 1, max_deep);
+        exit(0);
+    }
+    wait(NULL);
+    printf("%d\n", n);
+    fflush(stdout);
+    if(fork() == 0){
+        dfs(2 * n + 2, deep + 1, max_deep);
+        exit(0);
+    }
+    wait(NULL);
+    return;
+}
+
+
+int main(int argc, char *argv[]) {
+    int n;
+    sscanf(argv[1], "%d", &n);
+    dfs(0, 0, n);
     return 0;
 }

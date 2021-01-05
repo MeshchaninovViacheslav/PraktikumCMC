@@ -1,47 +1,37 @@
-#include <unistd.h>
-#include <ctype.h>
 #include <stdio.h>
+#include <limits.h>
+#include <string.h>
+
+enum Sizes
+{
+    S_SIZE = PATH_MAX + 3,
+    A_SIZE = 10
+};
 
 int
 main(void)
 {
-    enum
-    {
-        BUFF_SIZE = 16
-    };
-    unsigned long long sum = 0;
-    ssize_t n = 0;
-    unsigned char buf[BUFF_SIZE];
-    int sign = 1;
-    unsigned long long cur_num = 0;
-    while ((n = read(STDIN_FILENO, &buf, sizeof(buf))) > 0) {
-        int it = 0;
-        if (isspace(buf[it])) {
-            sum += cur_num;
-            cur_num = 0;
-            sign = 1;
+    long long a[A_SIZE] = {};
+    char name_file[S_SIZE];
+    if (fgets(name_file, sizeof(name_file), stdin)) {
+        int len = strlen(name_file);
+        while (len > 0 && (name_file[len - 1] == '\n' ||
+                           name_file[len - 1] == '\r')) {
+            len--;
+            name_file[len] = 0;
         }
-        while (it < n) {
-            if (isspace(buf[it])) {
-                sum += cur_num;
-                cur_num = 0;
-                sign = 1;
-                it++;
-            } else if (buf[it] == '+') {
-                it++;
-            } else if (buf[it] == '-') {
-                sign = -1;
-                it++;
-            } else {
-                cur_num = cur_num * 10 + sign * (buf[it] - '0');
-                it++;
+        FILE *f = fopen(name_file, "r");
+        if (f) {
+            int c;
+            while ((c = getc_unlocked(f)) != EOF) {
+                if (c >= '0' && c <= '9') {
+                    a[c - '0']++;
+                }
             }
+            fclose(f);
         }
     }
-    sum += cur_num;
-    if (n < 0) {
-        return 1;
+    for (int i = 0; i < A_SIZE; i++) {
+        printf("%d %lld\n", i, a[i]);
     }
-    printf("%lld\n", sum);
-    return 0;
 }
